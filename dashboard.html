@@ -1,0 +1,401 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delhivery SLA Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F6F9;
+    --surface:#FFFFFF;
+    --surface-alt:#EDF0F5;
+    --text:#151A23;
+    --text-muted:#5B6472;
+    --border:#DCE1E9;
+    --accent:#1F6F78;
+    --accent-soft:#DCEEEF;
+    --warn:#C97A2B;
+    --warn-soft:#F6E7D6;
+    --good:#2E7D4F;
+    --good-soft:#DFF0E6;
+    --carting:#3D7A82;
+    --ftl:#C97A2B;
+    --hist:#8B93A3;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0D1117;
+      --surface:#151B24;
+      --surface-alt:#1B2330;
+      --text:#E7EAF0;
+      --text-muted:#98A2B3;
+      --border:#2A3341;
+      --accent:#54B7C0;
+      --accent-soft:#173338;
+      --warn:#E2A860;
+      --warn-soft:#3A2C18;
+      --good:#5FC48A;
+      --good-soft:#173327;
+      --carting:#5FB4BE;
+      --ftl:#E2A860;
+      --hist:#7C8598;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0D1117;
+    --surface:#151B24;
+    --surface-alt:#1B2330;
+    --text:#E7EAF0;
+    --text-muted:#98A2B3;
+    --border:#2A3341;
+    --accent:#54B7C0;
+    --accent-soft:#173338;
+    --warn:#E2A860;
+    --warn-soft:#3A2C18;
+    --good:#5FC48A;
+    --good-soft:#173327;
+    --carting:#5FB4BE;
+    --ftl:#E2A860;
+    --hist:#7C8598;
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Public Sans', system-ui, sans-serif;
+    padding-inline:20px;
+    padding-block:28px 48px;
+    max-width:1180px;
+    margin:0 auto;
+  }
+  h1,h2,h3{font-family:'Archivo', system-ui, sans-serif; text-wrap:balance; margin:0;}
+  .mono{font-family:'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric:tabular-nums;}
+
+  header.page{
+    display:flex; flex-wrap:wrap; gap:16px 32px; align-items:flex-end; justify-content:space-between;
+    padding-block-end:22px; border-bottom:1px solid var(--border); margin-bottom:26px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin-bottom:6px; display:block;
+  }
+  header.page h1{font-size:clamp(24px,3.4vw,32px); font-weight:800; letter-spacing:-0.01em;}
+  header.page p{color:var(--text-muted); font-size:14.5px; margin:8px 0 0; max-width:52ch; line-height:1.5;}
+  .source-tag{
+    font-size:12.5px; color:var(--text-muted); text-align:right; line-height:1.6;
+  }
+  .source-tag a{color:var(--accent); text-decoration:none; font-weight:600;}
+  .source-tag a:hover{text-decoration:underline;}
+
+  .kpi-row{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:12px; margin-bottom:28px;
+  }
+  .kpi{
+    background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px 18px;
+  }
+  .kpi .label{font-size:11.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; font-weight:600;}
+  .kpi .value{font-family:'IBM Plex Mono', monospace; font-size:26px; font-weight:600; margin-top:6px; letter-spacing:-0.01em;}
+  .kpi .sub{font-size:12px; color:var(--text-muted); margin-top:3px;}
+
+  section{margin-bottom:34px;}
+  .section-head{display:flex; align-items:baseline; gap:10px; margin-bottom:4px;}
+  .section-head .num{font-family:'IBM Plex Mono', monospace; color:var(--accent); font-weight:600; font-size:13px;}
+  .section-head h2{font-size:18px; font-weight:700;}
+  .section-sub{color:var(--text-muted); font-size:13.5px; margin:4px 0 16px; max-width:70ch; line-height:1.55;}
+
+  .panel{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px 12px;
+  }
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media (max-width:820px){ .two-col{grid-template-columns:1fr;} }
+  .chart-wrap{position:relative; height:260px;}
+  .chart-title{font-size:13.5px; font-weight:600; margin-bottom:2px;}
+  .chart-note{font-size:11.5px; color:var(--text-muted); margin-bottom:10px;}
+
+  .callout{
+    background:var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+    border-radius:12px; padding:18px 20px; display:flex; gap:16px; align-items:flex-start; margin-top:16px;
+  }
+  .callout .icon-badge{
+    width:34px; height:34px; border-radius:8px; background:var(--accent); color:var(--surface);
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace;
+    font-weight:700; font-size:15px; flex:none;
+  }
+  .callout h3{font-size:14.5px; margin-bottom:4px;}
+  .callout p{font-size:13.5px; color:var(--text); line-height:1.55; margin:0;}
+  .callout b.ftl{color:var(--ftl);}
+  .callout b.carting{color:var(--carting);}
+
+  .pipeline{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+  @media (max-width:760px){ .pipeline{grid-template-columns:1fr 1fr;} }
+  .step{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px; position:relative;}
+  .step .step-num{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); font-weight:700;}
+  .step h4{font-size:13.5px; margin:6px 0 4px; font-weight:700;}
+  .step p{font-size:12px; color:var(--text-muted); margin:0; line-height:1.45;}
+
+  table.hubs{width:100%; border-collapse:collapse; font-size:13px;}
+  table.hubs td{padding:6px 4px; border-bottom:1px solid var(--border);}
+  table.hubs td.hub-name{font-weight:600;}
+  table.hubs td.hub-count{text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--text-muted);}
+  .bar-track{background:var(--surface-alt); border-radius:4px; height:7px; margin-top:4px; overflow:hidden;}
+  .bar-fill{background:var(--accent); height:100%; border-radius:4px;}
+
+  .legend-chip{display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--text-muted); margin-right:14px;}
+  .legend-dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+
+  footer{
+    border-top:1px solid var(--border); margin-top:36px; padding-top:18px;
+    display:flex; flex-wrap:wrap; gap:10px 24px; justify-content:space-between; align-items:center;
+    font-size:12.5px; color:var(--text-muted);
+  }
+  footer a{color:var(--accent); text-decoration:none; font-weight:600;}
+  footer a:hover{text-decoration:underline;}
+</style>
+
+<header class="page">
+  <div>
+    <span class="eyebrow">Real-data logistics simulation</span>
+    <h1>Does fleet size or SLA design drive on-time delivery?</h1>
+    <p>A discrete-event simulation of Delhivery's real dispatch operations at India's busiest hub in this dataset, built to separate a congestion problem from a promise-design problem.</p>
+  </div>
+  <div class="source-tag">
+    Data: real Delhivery operational scans<br>Sep&ndash;Oct 2018 &middot; 144,867 records<br>
+    <a href="https://github.com/Jnanadyuti-Patra/delhivery-hub-reliability-sim" target="_blank" rel="noopener">View source on GitHub &rarr;</a>
+  </div>
+</header>
+
+<div class="kpi-row" id="kpiRow"></div>
+
+<section>
+  <div class="section-head"><span class="num">01</span><h2>How the study was built</h2></div>
+  <div class="pipeline">
+    <div class="step"><span class="step-num">STEP 1</span><h4>Clean real scans</h4><p>144,867 checkpoint scans collapsed to 26,003 real actual-vs-planned transit legs.</p></div>
+    <div class="step"><span class="step-num">STEP 2</span><h4>Model the hub</h4><p>SimPy queue model of outbound dispatch, vehicle pool as a shared resource.</p></div>
+    <div class="step"><span class="step-num">STEP 3</span><h4>Rule out congestion</h4><p>Swept fleet size 2&ndash;24 vehicles &mdash; on-time rate plateaus early.</p></div>
+    <div class="step"><span class="step-num">STEP 4</span><h4>Find the real lever</h4><p>Swept the SLA buffer itself &mdash; found the route-type gap.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><span class="num">02</span><h2>What the raw data shows</h2></div>
+  <p class="section-sub">Across all 1,487 source hubs nationally, real delivery time runs well past the routing engine's naive plan &mdash; and FTL (long-haul) legs are, on average, slightly more predictable than Carting (local) legs.</p>
+  <div class="two-col">
+    <div class="panel">
+      <div class="chart-title">Actual / planned transit time ratio</div>
+      <div class="chart-note">All hubs &middot; n = 26,003 legs &middot; ratio of 1.0 = exactly on the routing engine's plan</div>
+      <div class="chart-wrap" id="delayHist"></div>
+    </div>
+    <div class="panel">
+      <div class="chart-title">Top source hubs by outbound leg volume</div>
+      <div class="chart-note">Gurgaon_Bilaspur_HB is the busiest &mdash; the hub this study models</div>
+      <table class="hubs" id="hubTable"></table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><span class="num">03</span><h2>Test 1 &mdash; is it a fleet-size problem?</h2></div>
+  <p class="section-sub">Gurgaon hub, Medium-distance tier (77&ndash;299km, where both route types are genuinely used). SLA promise fixed at 2&times; the planned time. Fleet size swept from 2 to 24 outbound vehicles.</p>
+  <div class="panel">
+    <div class="chart-wrap" style="height:300px" id="fleetChart"></div>
+  </div>
+  <div class="callout">
+    <div class="icon-badge">&ne;</div>
+    <div>
+      <h3>Finding: no &mdash; on-time rate plateaus while vehicles are still idle</h3>
+      <p>By ~8 vehicles, average dispatch wait time is already near zero &mdash; yet on-time rate caps at just <b>42&ndash;50%</b> even at 24 vehicles. The real constraint is <b>transit-time variance</b>, not fleet capacity. Adding trucks would not fix this.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><span class="num">04</span><h2>Test 2 &mdash; what SLA can each route type actually deliver?</h2></div>
+  <p class="section-sub">Fleet size fixed at 12 vehicles (congestion-free, per Test 1). SLA buffer swept instead, to find the promise window each policy can hit 90% of the time.</p>
+  <div class="panel">
+    <div class="chart-wrap" style="height:300px" id="bufferChart"></div>
+  </div>
+  <div class="callout">
+    <div class="icon-badge">&#10003;</div>
+    <div>
+      <h3>Recommendation</h3>
+      <p>For Medium-tier corridors out of Gurgaon, an <b class="ftl">all-FTL policy</b> reaches a 90% on-time rate at a <b class="ftl">3.0&times;</b>-of-plan SLA buffer &mdash; tighter than <b class="carting">Carting</b> or the historical 55/45 mix, both of which need <b class="carting">3.5&times;</b>. Quoting FTL for this tier lets the hub promise a shorter delivery window at the same reliability target.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>One honest caveat: this dataset has no fare/cost field, so vehicle-hours (not currency) is used as the operational-efficiency proxy throughout.</span>
+  <a href="https://github.com/Jnanadyuti-Patra/delhivery-hub-reliability-sim" target="_blank" rel="noopener">Full code &amp; methodology on GitHub &rarr;</a>
+</footer>
+
+<script>
+const DATA = {"total_raw_rows": 144867, "total_legs": 26003, "n_hubs": 1487, "route_share": {"FTL": 13825, "Carting": 12178}, "delay_hist_edges": [0.0, 0.2773333333333333, 0.5546666666666666, 0.832, 1.1093333333333333, 1.3866666666666667, 1.664, 1.9413333333333331, 2.2186666666666666, 2.496, 2.7733333333333334, 3.0506666666666664, 3.328, 3.6053333333333333, 3.8826666666666663, 4.16, 4.437333333333333, 4.714666666666666, 4.992, 5.269333333333333, 5.546666666666667, 5.824, 6.101333333333333, 6.378666666666667, 6.656, 6.933333333333334], "delay_hist_carting": [0, 9, 58, 347, 993, 1670, 1864, 1598, 1264, 1037, 740, 513, 399, 306, 212, 200, 163, 107, 94, 64, 65, 74, 56, 49, 52], "delay_hist_ftl": [0, 12, 116, 335, 1096, 2237, 3376, 2630, 1388, 836, 449, 304, 199, 148, 125, 97, 69, 58, 41, 25, 7, 0, 0, 0, 0], "top_hubs": [["Gurgaon_Bilaspur_HB", 1062], ["Bhiwandi_Mankoli_HB", 813], ["Bangalore_Nelmngla_H", 768], ["Bengaluru_Bomsndra_HB", 466], ["Pune_Tathawde_H", 400], ["Chandigarh_Mehmdpur_H", 370], ["Bengaluru_KGAirprt_HB", 331], ["Hyderabad_Shamshbd_H", 328]], "fleet_results": [{"policy": "Carting", "n_vehicles": 2, "on_time_rate": 0.0290618373484844, "avg_wait_min": 1231.2985949408946}, {"policy": "Carting", "n_vehicles": 3, "on_time_rate": 0.2404389659044699, "avg_wait_min": 60.71829869121355}, {"policy": "Carting", "n_vehicles": 4, "on_time_rate": 0.3513984897689339, "avg_wait_min": 14.359370017650894}, {"policy": "Carting", "n_vehicles": 5, "on_time_rate": 0.4033546409997989, "avg_wait_min": 3.158296198079767}, {"policy": "Carting", "n_vehicles": 6, "on_time_rate": 0.4160701966206742, "avg_wait_min": 0.8595357961913397}, {"policy": "Carting", "n_vehicles": 8, "on_time_rate": 0.418648961863569, "avg_wait_min": 0.0609191747164838}, {"policy": "Carting", "n_vehicles": 10, "on_time_rate": 0.4212710636537344, "avg_wait_min": 0.0013803893940017}, {"policy": "Carting", "n_vehicles": 14, "on_time_rate": 0.4191323193734603, "avg_wait_min": 0.0}, {"policy": "Carting", "n_vehicles": 18, "on_time_rate": 0.419507724708598, "avg_wait_min": 0.0}, {"policy": "Carting", "n_vehicles": 24, "on_time_rate": 0.4217905920984792, "avg_wait_min": 0.0}, {"policy": "FTL", "n_vehicles": 2, "on_time_rate": 0.00584013670566, "avg_wait_min": 10120.212339574871}, {"policy": "FTL", "n_vehicles": 3, "on_time_rate": 0.0123915730835683, "avg_wait_min": 4580.165044438903}, {"policy": "FTL", "n_vehicles": 4, "on_time_rate": 0.0737264123848829, "avg_wait_min": 918.65083427841}, {"policy": "FTL", "n_vehicles": 5, "on_time_rate": 0.2539553762206014, "avg_wait_min": 127.81267956564648}, {"policy": "FTL", "n_vehicles": 6, "on_time_rate": 0.3723480538768284, "avg_wait_min": 42.93812746732241}, {"policy": "FTL", "n_vehicles": 8, "on_time_rate": 0.4795523738694134, "avg_wait_min": 5.101268444650364}, {"policy": "FTL", "n_vehicles": 10, "on_time_rate": 0.499532720005053, "avg_wait_min": 0.5081349963182624}, {"policy": "FTL", "n_vehicles": 14, "on_time_rate": 0.5058413946607275, "avg_wait_min": 0.0215253170350153}, {"policy": "FTL", "n_vehicles": 18, "on_time_rate": 0.5048462382879763, "avg_wait_min": 0.0}, {"policy": "FTL", "n_vehicles": 24, "on_time_rate": 0.5011698415459491, "avg_wait_min": 0.0}, {"policy": "Historical", "n_vehicles": 2, "on_time_rate": 0.0072567622163003, "avg_wait_min": 6522.36443318771}, {"policy": "Historical", "n_vehicles": 3, "on_time_rate": 0.0627529054692066, "avg_wait_min": 803.0288408819746}, {"policy": "Historical", "n_vehicles": 4, "on_time_rate": 0.2581609157759261, "avg_wait_min": 89.9093658753931}, {"policy": "Historical", "n_vehicles": 5, "on_time_rate": 0.3734350390470204, "avg_wait_min": 23.852655632175622}, {"policy": "Historical", "n_vehicles": 6, "on_time_rate": 0.4159138631942902, "avg_wait_min": 7.400787998817949}, {"policy": "Historical", "n_vehicles": 8, "on_time_rate": 0.4590727784117753, "avg_wait_min": 0.5801886210101612}, {"policy": "Historical", "n_vehicles": 10, "on_time_rate": 0.4544100998844224, "avg_wait_min": 0.0434123157979612}, {"policy": "Historical", "n_vehicles": 14, "on_time_rate": 0.462039641307411, "avg_wait_min": 0.0}, {"policy": "Historical", "n_vehicles": 18, "on_time_rate": 0.4561883125306959, "avg_wait_min": 0.0}, {"policy": "Historical", "n_vehicles": 24, "on_time_rate": 0.4575912702596836, "avg_wait_min": 0.0}], "buffer_results": [{"policy": "Carting", "sla_buffer": 1.5, "on_time_rate": 0.0252493328985195}, {"policy": "Carting", "sla_buffer": 1.75, "on_time_rate": 0.2394957470836189}, {"policy": "Carting", "sla_buffer": 2.0, "on_time_rate": 0.4132606238928094}, {"policy": "Carting", "sla_buffer": 2.25, "on_time_rate": 0.5485964555697793}, {"policy": "Carting", "sla_buffer": 2.5, "on_time_rate": 0.6933684232514755}, {"policy": "Carting", "sla_buffer": 2.75, "on_time_rate": 0.8219699444838569}, {"policy": "Carting", "sla_buffer": 3.0, "on_time_rate": 0.867446896376206}, {"policy": "Carting", "sla_buffer": 3.5, "on_time_rate": 0.9556126053863826}, {"policy": "Carting", "sla_buffer": 4.0, "on_time_rate": 0.9792184825427304}, {"policy": "Carting", "sla_buffer": 4.5, "on_time_rate": 0.9889632769448156}, {"policy": "Carting", "sla_buffer": 5.0, "on_time_rate": 1.0}, {"policy": "FTL", "sla_buffer": 1.5, "on_time_rate": 0.0}, {"policy": "FTL", "sla_buffer": 1.75, "on_time_rate": 0.158809654455235}, {"policy": "FTL", "sla_buffer": 2.0, "on_time_rate": 0.5077614570221156}, {"policy": "FTL", "sla_buffer": 2.25, "on_time_rate": 0.7492263278163094}, {"policy": "FTL", "sla_buffer": 2.5, "on_time_rate": 0.8339423146561058}, {"policy": "FTL", "sla_buffer": 2.75, "on_time_rate": 0.880225770260445}, {"policy": "FTL", "sla_buffer": 3.0, "on_time_rate": 0.9368953395987664}, {"policy": "FTL", "sla_buffer": 3.5, "on_time_rate": 0.948770986267412}, {"policy": "FTL", "sla_buffer": 4.0, "on_time_rate": 0.9872530618559424}, {"policy": "FTL", "sla_buffer": 4.5, "on_time_rate": 1.0}, {"policy": "FTL", "sla_buffer": 5.0, "on_time_rate": 1.0}, {"policy": "Historical", "sla_buffer": 1.5, "on_time_rate": 0.0139444313618994}, {"policy": "Historical", "sla_buffer": 1.75, "on_time_rate": 0.2035465819439298}, {"policy": "Historical", "sla_buffer": 2.0, "on_time_rate": 0.4607552912731775}, {"policy": "Historical", "sla_buffer": 2.25, "on_time_rate": 0.6327259654432826}, {"policy": "Historical", "sla_buffer": 2.5, "on_time_rate": 0.7604714499623417}, {"policy": "Historical", "sla_buffer": 2.75, "on_time_rate": 0.8500692574688749}, {"policy": "Historical", "sla_buffer": 3.0, "on_time_rate": 0.8979816452713993}, {"policy": "Historical", "sla_buffer": 3.5, "on_time_rate": 0.9518672076554754}, {"policy": "Historical", "sla_buffer": 4.0, "on_time_rate": 0.982218625303368}, {"policy": "Historical", "sla_buffer": 4.5, "on_time_rate": 0.9948704246059472}, {"policy": "Historical", "sla_buffer": 5.0, "on_time_rate": 1.0}], "avg_delay_ratio_carting": 2.506, "avg_delay_ratio_ftl": 2.145};
+
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+function fmtInt(n){ return n.toLocaleString('en-IN'); }
+
+// KPI tiles
+const kpiRow = document.getElementById('kpiRow');
+const kpis = [
+  {label:'Raw scan records', value: fmtInt(DATA.total_raw_rows), sub:'Real Delhivery operational data'},
+  {label:'Trip legs analyzed', value: fmtInt(DATA.total_legs), sub: fmtInt(DATA.n_hubs) + ' source hubs nationally'},
+  {label:'Avg delay ratio', value: DATA.avg_delay_ratio_carting.toFixed(2)+'x / '+DATA.avg_delay_ratio_ftl.toFixed(2)+'x', sub:'Carting vs FTL, actual÷planned'},
+  {label:'90% on-time buffer', value:'3.0x FTL', sub:'vs 3.5x Carting — the recommendation'},
+];
+kpiRow.innerHTML = kpis.map(k => `
+  <div class="kpi">
+    <div class="label">${k.label}</div>
+    <div class="value">${k.value}</div>
+    <div class="sub">${k.sub}</div>
+  </div>`).join('');
+
+// hub table
+const hubTable = document.getElementById('hubTable');
+const maxHub = DATA.top_hubs[0][1];
+hubTable.innerHTML = DATA.top_hubs.map(([name,count]) => `
+  <tr>
+    <td class="hub-name">${name}<div class="bar-track"><div class="bar-fill" style="width:${(count/maxHub*100).toFixed(0)}%"></div></div></td>
+    <td class="hub-count">${fmtInt(count)}</td>
+  </tr>`).join('');
+
+// ---- hand-built SVG charts (no external chart library; renders anywhere) ----
+const svgNS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs){
+  const n = document.createElementNS(svgNS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  return n;
+}
+function policySeries(results, xKey, yKey, policy){
+  return results.filter(r=>r.policy===policy).map(r=>({x:r[xKey], y:+(r[yKey]*100).toFixed(1)}));
+}
+const policyColor = {Carting:'var(--carting)', FTL:'var(--ftl)', Historical:'var(--hist)'};
+const W = 640, H_LINE = 300, H_BAR = 260;
+const PAD = {left:44, right:14, top:14, bottom:32};
+
+function renderGroupedBars(mountId, edges, seriesA, nameA, seriesB, nameB){
+  const mount = document.getElementById(mountId);
+  const h = H_BAR;
+  const plotW = W - PAD.left - PAD.right, plotH = h - PAD.top - PAD.bottom;
+  const maxY = Math.max(...seriesA, ...seriesB) * 1.08;
+  const n = seriesA.length;
+  const groupW = plotW / n;
+  const svg = el('svg', {viewBox:`0 0 ${W} ${h}`, width:'100%', height:'100%', role:'img',
+    'aria-label':'Histogram of actual over planned transit time ratio, Carting vs FTL'});
+
+  // gridlines + y ticks
+  const yTicks = 4;
+  for (let i=0;i<=yTicks;i++){
+    const val = maxY * i / yTicks;
+    const y = PAD.top + plotH - (val/maxY)*plotH;
+    svg.appendChild(el('line', {x1:PAD.left, x2:W-PAD.right, y1:y, y2:y, stroke:'var(--border)', 'stroke-width':1}));
+    const t = el('text', {x:PAD.left-6, y:y+3, 'text-anchor':'end', 'font-size':9.5, fill:'var(--text-muted)'});
+    t.textContent = Math.round(val).toLocaleString('en-IN');
+    svg.appendChild(t);
+  }
+  // reference line at ratio = 1.0
+  const oneIdx = edges.findIndex(e=>e>=1.0);
+  if (oneIdx > 0){
+    const xAtOne = PAD.left + (oneIdx - 0.5) * groupW;
+    svg.appendChild(el('line', {x1:xAtOne, x2:xAtOne, y1:PAD.top, y2:PAD.top+plotH, stroke:'var(--text-muted)', 'stroke-width':1, 'stroke-dasharray':'3,3'}));
+  }
+  // bars
+  for (let i=0;i<n;i++){
+    const gx = PAD.left + i*groupW;
+    const bw = groupW*0.4;
+    const hA = (seriesA[i]/maxY)*plotH, hB = (seriesB[i]/maxY)*plotH;
+    svg.appendChild(el('rect', {x:gx+groupW*0.06, y:PAD.top+plotH-hA, width:bw, height:hA, fill:policyColor.Carting, opacity:0.9, rx:1.5}));
+    svg.appendChild(el('rect', {x:gx+groupW*0.06+bw, y:PAD.top+plotH-hB, width:bw, height:hB, fill:policyColor.FTL, opacity:0.9, rx:1.5}));
+    if (i % 4 === 0){
+      const t = el('text', {x:gx+groupW/2, y:h-PAD.bottom+14, 'text-anchor':'middle', 'font-size':9.5, fill:'var(--text-muted)'});
+      t.textContent = edges[i].toFixed(1)+'x';
+      svg.appendChild(t);
+    }
+  }
+  svg.appendChild(el('line', {x1:PAD.left, x2:W-PAD.right, y1:PAD.top+plotH, y2:PAD.top+plotH, stroke:'var(--border)', 'stroke-width':1}));
+  mount.innerHTML = '';
+  mount.appendChild(svg);
+  mount.insertAdjacentHTML('beforeend', legendHTML([[nameA, policyColor.Carting],[nameB, policyColor.FTL]]));
+}
+
+function legendHTML(items){
+  return `<div style="display:flex;gap:14px;justify-content:flex-end;margin-top:2px">${
+    items.map(([label,color])=>`<span class="legend-chip"><span class="legend-dot" style="background:${color}"></span>${label}</span>`).join('')
+  }</div>`;
+}
+
+function renderLineChart(mountId, seriesByPolicy, xLabel, yLabel, targetLine){
+  const mount = document.getElementById(mountId);
+  const h = H_LINE;
+  const plotW = W - PAD.left - PAD.right, plotH = h - PAD.top - PAD.bottom;
+  const allX = seriesByPolicy.Carting.map(p=>p.x);
+  const xMin = Math.min(...allX), xMax = Math.max(...allX);
+  const yMin = 0, yMax = 100;
+  const xPix = x => PAD.left + ((x-xMin)/(xMax-xMin))*plotW;
+  const yPix = y => PAD.top + plotH - ((y-yMin)/(yMax-yMin))*plotH;
+
+  const svg = el('svg', {viewBox:`0 0 ${W} ${h}`, width:'100%', height:'100%', role:'img',
+    'aria-label': `${yLabel} vs ${xLabel}, by policy`});
+
+  const yTicks = [0,25,50,75,100];
+  yTicks.forEach(v=>{
+    const y = yPix(v);
+    svg.appendChild(el('line', {x1:PAD.left, x2:W-PAD.right, y1:y, y2:y, stroke:'var(--border)', 'stroke-width':1}));
+    const t = el('text', {x:PAD.left-6, y:y+3, 'text-anchor':'end', 'font-size':9.5, fill:'var(--text-muted)'});
+    t.textContent = v+'%';
+    svg.appendChild(t);
+  });
+  allX.forEach((xv,i)=>{
+    const x = xPix(xv);
+    const t = el('text', {x, y:h-PAD.bottom+14, 'text-anchor':'middle', 'font-size':9, fill:'var(--text-muted)'});
+    t.textContent = xv;
+    svg.appendChild(t);
+  });
+  if (targetLine != null){
+    const y = yPix(targetLine);
+    svg.appendChild(el('line', {x1:PAD.left, x2:W-PAD.right, y1:y, y2:y, stroke:'var(--text-muted)', 'stroke-width':1.2, 'stroke-dasharray':'4,3'}));
+    const t = el('text', {x:W-PAD.right, y:y-4, 'text-anchor':'end', 'font-size':9.5, fill:'var(--text-muted)'});
+    t.textContent = targetLine+'% target';
+    svg.appendChild(t);
+  }
+  // axis titles
+  const xt = el('text', {x:PAD.left+plotW/2, y:h-4, 'text-anchor':'middle', 'font-size':10.5, fill:'var(--text-muted)'});
+  xt.textContent = xLabel; svg.appendChild(xt);
+  const yt = el('text', {x:-(PAD.top+plotH/2), y:12, 'text-anchor':'middle', 'font-size':10.5, fill:'var(--text-muted)', transform:'rotate(-90)'});
+  yt.textContent = yLabel; svg.appendChild(yt);
+
+  ['Carting','FTL','Historical'].forEach(policy=>{
+    const pts = seriesByPolicy[policy];
+    const d = pts.map((p,i)=> (i===0?'M':'L') + xPix(p.x).toFixed(1) + ',' + yPix(p.y).toFixed(1)).join(' ');
+    svg.appendChild(el('path', {d, fill:'none', stroke:policyColor[policy], 'stroke-width':2.25, 'stroke-linejoin':'round'}));
+    pts.forEach(p=>{
+      svg.appendChild(el('circle', {cx:xPix(p.x), cy:yPix(p.y), r:3, fill:policyColor[policy]}));
+    });
+  });
+
+  mount.innerHTML = '';
+  mount.appendChild(svg);
+  mount.insertAdjacentHTML('beforeend', legendHTML([['Carting',policyColor.Carting],['FTL',policyColor.FTL],['Historical',policyColor.Historical]]));
+}
+
+// 1. delay histogram
+renderGroupedBars('delayHist', DATA.delay_hist_edges, DATA.delay_hist_carting, 'Carting', DATA.delay_hist_ftl, 'FTL');
+
+// 2. fleet size chart
+renderLineChart('fleetChart', {
+  Carting: policySeries(DATA.fleet_results,'n_vehicles','on_time_rate','Carting'),
+  FTL: policySeries(DATA.fleet_results,'n_vehicles','on_time_rate','FTL'),
+  Historical: policySeries(DATA.fleet_results,'n_vehicles','on_time_rate','Historical'),
+}, 'outbound vehicles at hub', 'on-time rate', 90);
+
+// 3. SLA buffer chart
+renderLineChart('bufferChart', {
+  Carting: policySeries(DATA.buffer_results,'sla_buffer','on_time_rate','Carting'),
+  FTL: policySeries(DATA.buffer_results,'sla_buffer','on_time_rate','FTL'),
+  Historical: policySeries(DATA.buffer_results,'sla_buffer','on_time_rate','Historical'),
+}, 'SLA promise (x planned time)', 'on-time rate', 90);
+</script>

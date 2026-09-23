@@ -1,0 +1,4 @@
+data/delhivery_india.csv
+__pycache__/
+*.pyc
+.venv/
