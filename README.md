@@ -2,7 +2,7 @@
 
 A discrete-event simulation study of real Indian logistics operations data, built to answer one question a network-design consultant would actually be asked: **when a hub misses its delivery promise, is it because there aren't enough vehicles, or because the promise itself is unrealistic?**
 
-**[Live dashboard](https://jnanadyuti-patra.github.io/delhivery-hub-reliability-sim/)** · Data: [Delhivery](https://www.delhivery.com/) operational GPS/scan records (public case-study release, Sep–Oct 2018)
+**[Live dashboard](https://jnanadyuti-patra.github.io/delhivery-hub-reliability-sim/)** · **[Full technical report (PDF)](report/Delhivery_SLA_Study_Report.pdf)** · Data: [Delhivery](https://www.delhivery.com/) operational GPS/scan records (public case-study release, Sep–Oct 2018)
 
 ## Data
 
